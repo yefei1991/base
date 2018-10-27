@@ -74,7 +74,7 @@ public class NovelService extends AbstractService<Novel> {
     
     public List<Chapter> findNeedDownload(Novel novel){
     	Condition con=new Condition(Chapter.class);
-    	con.and().andIsNull("content").andEqualTo("novelid", 1);
+    	con.and().andIsNull("content").andEqualTo("novelid", novel.getId());
     	List<Chapter> chapters=chapterService.findByCondition(con);
     	return chapters;
     }
