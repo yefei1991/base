@@ -12,4 +12,9 @@
     <result column="url" jdbcType="VARCHAR" property="url" />
     <result column="createTime" jdbcType="TIMESTAMP" property="createtime" />
   </resultMap>
+
+	<!--查询返回base地的map集合 -->
+	<select id="findChaptersByNovelId" resultType="java.util.HashMap">
+		select id,title from chapter where novelId=#{novelId}
+	</select>
 </mapper>

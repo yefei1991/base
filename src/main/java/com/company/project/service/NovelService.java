@@ -3,6 +3,7 @@ package com.company.project.service;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -77,5 +78,9 @@ public class NovelService extends AbstractService<Novel> {
     	con.and().andIsNull("content").andEqualTo("novelid", novel.getId());
     	List<Chapter> chapters=chapterService.findByCondition(con);
     	return chapters;
+    }
+    
+    public List<Map<String,Object>> findChaptersByNovelId(Integer novelId){
+    	return novelMapper.findChaptersByNovelId(novelId);
     }
 }
