@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50638
 File Encoding         : 65001
 
-Date: 2018-10-20 16:53:08
+Date: 2019-01-04 17:36:35
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -28,9 +28,8 @@ CREATE TABLE `chapter` (
   `next` varchar(255) DEFAULT NULL,
   `content` text,
   PRIMARY KEY (`id`),
-  KEY `novelId` (`novelId`),
-  CONSTRAINT `chapter_ibfk_1` FOREIGN KEY (`novelId`) REFERENCES `novel` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=962 DEFAULT CHARSET=utf8;
+  KEY `novelId` (`novelId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for novel
@@ -43,5 +42,6 @@ CREATE TABLE `novel` (
   `type` varchar(50) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `createTime` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `sort` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

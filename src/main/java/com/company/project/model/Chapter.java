@@ -1,6 +1,9 @@
 package com.company.project.model;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 public class Chapter {
     @Id
@@ -19,8 +22,18 @@ public class Chapter {
     private String next;
 
     private String content;
+    
+    private int sort;
 
-    /**
+    public int getSort() {
+		return sort;
+	}
+
+	public void setSort(int sort) {
+		this.sort = sort;
+	}
+
+	/**
      * @return id
      */
     public Integer getId() {
