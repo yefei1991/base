@@ -1,6 +1,8 @@
 package com.company.project.util;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
@@ -33,6 +35,16 @@ public class Utils {
 			}
 		}
 		
+	}
+	
+	public static final SimpleDateFormat sfm=new SimpleDateFormat("HH:mm:ss");
+	
+	public static void printCurrentTime() {
+		System.out.println(sfm.format(new Date()));
+	}
+	
+	public static void main(String[] args) {
+		printCurrentTime();
 	}
 	
 }

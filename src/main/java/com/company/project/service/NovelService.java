@@ -95,13 +95,20 @@ public class NovelService extends AbstractService<Novel> {
     }
     
     public void download() {
+//    	String url="http://www.x23us.com/html/69/69957/30372903.html";
+//    	Chapter chapter=chapterService.findById(12);
+//    	Condition con=new Condition(Chapter.class);
+//    	con.and().andEqualTo("url",url);
+//    	Chapter c=chapterService.findByCondition(con).get(0);
+//    	System.out.println(c);;
+//    	System.out.println(chapter);
     	DingDianDownloader dddownloader=new DingDianDownloader();
 		HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
     	SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80));
     	httpClientDownloader.setProxyProvider(proxyProvider);
     	List<Request> requests=new ArrayList<>();
-    	Spider spider=Spider.create(dddownloader).thread(5).setDownloader(httpClientDownloader).addPipeline(new MysqlPipeline());
-    	for(int i=1;i<=1;i++) {
+    	Spider spider=Spider.create(dddownloader).thread(32).setDownloader(httpClientDownloader).addPipeline(new MysqlPipeline());
+    	for(int i=1;i<=10;i++) {
     		Request request=new Request("https://www.x23us.com/modules/article/search.php?searchtype=keywords&searchkey=%C8%FD%B9%FA&page="+i);
     		request.putExtra("type", "novels");
     		requests.add(request);
@@ -117,6 +124,20 @@ public class NovelService extends AbstractService<Novel> {
 			if("novels".equals(resultItems.getRequest().getExtra("type"))) {
 				List<Novel> novels=resultItems.get("novels");
 				save(novels);
+			}else if("chapters".equals(resultItems.getRequest().getExtra("type"))) {
+				List<Chapter> chapters=resultItems.get("chapters");
+				Novel novel=findBy("url", resultItems.getRequest().getExtra("novelUrl"));
+				chapters.forEach(s->{
+					s.setNovelid(novel.getId());
+				});
+				chapterService.save(chapters);
+			}else if("chapterDetail".equals(resultItems.getRequest().getExtra("type"))) {
+				String content=resultItems.get("content");
+				Condition con=new Condition(Chapter.class);
+		    	con.and().andEqualTo("url",resultItems.getRequest().getUrl());
+		    	Chapter chapter=chapterService.findByCondition(con).get(0);
+				chapter.setContent(content);
+				chapterService.update(chapter);
 			}
 			
 		}

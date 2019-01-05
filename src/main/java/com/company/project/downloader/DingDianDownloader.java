@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.company.project.model.Chapter;
 import com.company.project.model.Novel;
 
 import us.codecraft.webmagic.Page;
@@ -31,7 +32,7 @@ public class DingDianDownloader implements PageProcessor{
     	SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80));
     	httpClientDownloader.setProxyProvider(proxyProvider);
     	List<Request> requests=new ArrayList<>();
-    	Spider spider=Spider.create(dddownloader).thread(5).setDownloader(httpClientDownloader);
+    	Spider spider=Spider.create(dddownloader).thread(16).setDownloader(httpClientDownloader);
     	for(int i=1;i<=1;i++) {
     		Request request=new Request("https://www.x23us.com/modules/article/search.php?searchtype=keywords&searchkey=%C8%FD%B9%FA&page="+i);
     		request.putExtra("type", "novels");
@@ -60,45 +61,40 @@ public class DingDianDownloader implements PageProcessor{
 				novel.setType(type);
 				novel.setUrl(url);
 				novels.add(novel);
-				System.out.println(url);
-				System.out.println(name);
-				System.out.println(author);
-				System.out.println(type);
+				Request request=new Request(url);
+		    	request.putExtra("type", "chapters");
+		    	request.putExtra("novelUrl", url);
+		    	page.addTargetRequest(request);
 			}
 			page.putField("novels", novels);
 //			Request request=new Request(url);
 //	    	request.putExtra("type", "chapter");
 //	    	page.setSkip(true);
 	    	//page.addTargetRequest(request);
-		}else if("chapter".equals(page.getRequest().getExtra("type"))) {
-			//System.out.println(page.getHtml().$("table").links().all().size());
+		}else if("chapters".equals(page.getRequest().getExtra("type"))) {
 			List<String> urls=page.getHtml().$("table").links().all();
-//			Request request=new Request(urls.get(0));
-//			request.putExtra("type", "chapterDetail");
-//			page.addTargetRequest(request);
-			page.setSkip(true);
-			urls.forEach(s->{
-				Request request=new Request(s);
-				request.putExtra("type", "chapterDetail");
-				page.addTargetRequest(request);
-			});
+			List<String> titles=page.getHtml().$("table a","text").all();
+			List<Chapter> chapters=new ArrayList<>();
+			for(int i=0;i<urls.size();i++) {
+				Chapter c=new Chapter();
+				c.setSort(i+1);
+				c.setTitle(titles.get(i));
+				c.setUrl(urls.get(i));
+				chapters.add(c);
+				Request request=new Request(urls.get(i));
+		    	request.putExtra("type", "chapterDetail");
+		    	page.addTargetRequest(request);
+			}
+			page.putField("chapters", chapters);
 		}else if("chapterDetail".equals(page.getRequest().getExtra("type"))) {
-			List<String> as=page.getHtml().css("#amain dl dt a","text").all();
-			String title=as.get(as.size()-1);
-			String chapter=page.getHtml().css("h1","text").get();
 			String content=page.getHtml().css("#contents","text").get();
-			page.putField("title", title);
-			page.putField("chapter", chapter);
 			page.putField("content", content);
-//			System.out.println(chapter);
-//			System.out.println(title);
-//			System.out.println(content);
 		}
 	}
 
 	@Override
 	public Site getSite() {
-		return Site.me().setSleepTime(1000).setRetryTimes(3).setRetrySleepTime(100);
+		return Site.me().setSleepTime(500).setRetryTimes(5).setRetrySleepTime(100);
 	}
 
 	class novelPipeLine implements Pipeline{
