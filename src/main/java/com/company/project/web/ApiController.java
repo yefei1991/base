@@ -12,6 +12,7 @@ import com.company.project.model.Chapter;
 import com.company.project.model.Novel;
 import com.company.project.service.ChapterService;
 import com.company.project.service.NovelService;
+import com.company.project.util.Utils;
 
 @RestController
 @RequestMapping("/api")
@@ -40,8 +41,11 @@ public class ApiController {
 
   @GetMapping("/chapterDetail")
   public JsonResult chapterDetail(Integer chapterId) {
+    Utils.printCurrentTime();
     Objects.requireNonNull(chapterId, "chapterId is null");
     Chapter c = chapterService.findById(chapterId);
+    chapterService.setPrevAndNext(c);
+    Utils.printCurrentTime();
     return JsonResult.success(c);
   }
 }

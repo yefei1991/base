@@ -1,7 +1,6 @@
 package com.company.project.service;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -92,28 +91,38 @@ public class NovelService extends AbstractService<Novel> {
     return novelMapper.findChaptersByNovelId(novelId);
   }
 
-  public void download() {
-    // String url="http://www.x23us.com/html/69/69957/30372903.html";
-    // Chapter chapter=chapterService.findById(12);
-    // Condition con=new Condition(Chapter.class);
-    // con.and().andEqualTo("url",url);
-    // Chapter c=chapterService.findByCondition(con).get(0);
-    // System.out.println(c);;
-    // System.out.println(chapter);
+  private Spider getSpider() {
     DingDianDownloader dddownloader = new DingDianDownloader();
     HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-    SimpleProxyProvider proxyProvider =
-        SimpleProxyProvider.from(new Proxy("proxyhk.aac.com", 8011));
+    SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80),
+        new Proxy("proxyhk.aac.com", 8011));
     httpClientDownloader.setProxyProvider(proxyProvider);
-    List<Request> requests = new ArrayList<>();
     Spider spider = Spider.create(dddownloader).thread(32).setDownloader(httpClientDownloader)
         .addPipeline(new MysqlPipeline());
+    return spider;
+  }
+
+  public void download() {
+    Spider spider = getSpider();
     for (int i = 1; i <= 1; i++) {
       Request request = new Request(
           "https://www.x23us.com/modules/article/search.php?searchtype=keywords&searchkey=%C8%FD%B9%FA&page="
               + i);
       request.putExtra("type", "novels");
-      requests.add(request);
+      spider.addRequest(request);
+    }
+    spider.run();
+  }
+
+  // 部分章节下载失败,重新下载
+  public void downFailure() {
+    Condition con = new Condition(Chapter.class);
+    con.and().andIsNull("content");
+    List<Chapter> chapters = chapterService.findByCondition(con);
+    Spider spider = getSpider();
+    for (Chapter c : chapters) {
+      Request request = new Request(c.getUrl());
+      request.putExtra("type", "chapterDetail");
       spider.addRequest(request);
     }
     spider.run();
