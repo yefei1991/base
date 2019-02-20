@@ -1,5 +1,6 @@
 package com.company.project.model;
 
+import java.math.BigInteger;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -9,7 +10,7 @@ import javax.persistence.Id;
 public class Novel {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+  private BigInteger id;
 
   private String name;
 
@@ -22,17 +23,11 @@ public class Novel {
   @Column(name = "createTime")
   private Date createtime;
 
-  /**
-   * @return id
-   */
-  public Integer getId() {
+  public BigInteger getId() {
     return id;
   }
 
-  /**
-   * @param id
-   */
-  public void setId(Integer id) {
+  public void setId(BigInteger id) {
     this.id = id;
   }
 

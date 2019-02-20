@@ -103,6 +103,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- mongodb -->
+	    <dependency> 
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-data-mongodb</artifactId>
+	    </dependency> 
 		<!-- jsonp和httpclient -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
@@ -122,6 +127,10 @@
 			<groupId>us.codecraft</groupId>
 			<artifactId>webmagic-extension</artifactId>
 			<version>0.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-artemis</artifactId>
 		</dependency>
 	</dependencies>
 

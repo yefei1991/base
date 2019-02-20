@@ -8,6 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.company.project.core.AbstractService;
@@ -39,6 +42,9 @@ public class NovelService extends AbstractService<Novel> {
 
   @Autowired
   private ChapterService chapterService;
+
+  @Autowired
+  private MongoTemplate mongoTemplate;
 
   public JsonResult saveChaptersByUrl(Novel novel) {
     List<Chapter> chapters = Downloader.downloadChapters(novel.getUrl());
@@ -95,10 +101,11 @@ public class NovelService extends AbstractService<Novel> {
     DingDianDownloader dddownloader = new DingDianDownloader();
     HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
     // new Proxy("proxyhk.aac.com", 8011)
-    SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80));
+    SimpleProxyProvider proxyProvider =
+        SimpleProxyProvider.from(new Proxy("proxyhk.aac.com", 8011));
     httpClientDownloader.setProxyProvider(proxyProvider);
     Spider spider = Spider.create(dddownloader).thread(64).setDownloader(httpClientDownloader)
-        .addPipeline(new MysqlPipeline());
+        .addPipeline(new MongoPipeline());
     return spider;
   }
 
@@ -131,6 +138,18 @@ public class NovelService extends AbstractService<Novel> {
     }
   }
 
+  public void downMongoFailure() {
+    Query query = new Query(Criteria.where("downloaded").is(false));
+    List<Chapter> chapters = mongoTemplate.find(query, Chapter.class);
+    Spider spider = getSpider();
+    for (Chapter c : chapters) {
+      Request request = new Request(c.getUrl());
+      request.putExtra("type", "chapterDetail");
+      spider.addRequest(request);
+    }
+    spider.run();
+  }
+
   class MysqlPipeline implements Pipeline {
 
     @Override
@@ -155,6 +174,34 @@ public class NovelService extends AbstractService<Novel> {
         chapterService.update(chapter);
       }
 
+    }
+
+  }
+
+  class MongoPipeline implements Pipeline {
+
+    @Override
+    public void process(ResultItems resultItems, Task task) {
+      if ("novels".equals(resultItems.getRequest().getExtra("type"))) {
+        List<Novel> novels = resultItems.get("novels");
+        mongoTemplate.insert(novels, Novel.class);
+      } else if ("chapters".equals(resultItems.getRequest().getExtra("type"))) {
+        List<Chapter> chapters = resultItems.get("chapters");
+        Query query =
+            new Query(Criteria.where("url").is(resultItems.getRequest().getExtra("novelUrl")));
+        Novel novel = mongoTemplate.findOne(query, Novel.class);
+        chapters.forEach(s -> {
+          s.setNovelid(novel.getId());
+        });
+        mongoTemplate.insert(chapters, Chapter.class);
+      } else if ("chapterDetail".equals(resultItems.getRequest().getExtra("type"))) {
+        String content = resultItems.get("content");
+        Query query = new Query(Criteria.where("url").is(resultItems.getRequest().getUrl()));
+        Chapter chapter = mongoTemplate.findOne(query, Chapter.class);
+        chapter.setContent(content);
+        chapter.setDownloaded(true);
+        mongoTemplate.save(chapter);
+      }
     }
 
   }

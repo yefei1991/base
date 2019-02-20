@@ -1,5 +1,6 @@
 package com.company.project.model;
 
+import java.math.BigInteger;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,10 +9,10 @@ import javax.persistence.Id;
 public class Chapter {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+  private BigInteger id;
 
   @Column(name = "novelId")
-  private Integer novelid;
+  private BigInteger novelid;
 
   private String url;
 
@@ -43,31 +44,19 @@ public class Chapter {
     this.sort = sort;
   }
 
-  /**
-   * @return id
-   */
-  public Integer getId() {
+  public BigInteger getId() {
     return id;
   }
 
-  /**
-   * @param id
-   */
-  public void setId(Integer id) {
+  public void setId(BigInteger id) {
     this.id = id;
   }
 
-  /**
-   * @return novelId
-   */
-  public Integer getNovelid() {
+  public BigInteger getNovelid() {
     return novelid;
   }
 
-  /**
-   * @param novelid
-   */
-  public void setNovelid(Integer novelid) {
+  public void setNovelid(BigInteger novelid) {
     this.novelid = novelid;
   }
 

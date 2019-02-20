@@ -1,5 +1,6 @@
 package com.company.project.service;
 
+import java.math.BigInteger;
 import java.util.List;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class ChapterService extends AbstractService<Chapter> {
         : findByNovelIdAndSort(c.getNovelid(), c.getSort() - 1).getId() + "");
   }
 
-  public Chapter findByNovelIdAndSort(int novelId, int sort) {
+  public Chapter findByNovelIdAndSort(BigInteger novelId, int sort) {
     Condition c = new Condition(Chapter.class);
     c.and().andEqualTo("sort", sort).andEqualTo("novelid", novelId);
     List<Chapter> chapters = this.findByCondition(c);
