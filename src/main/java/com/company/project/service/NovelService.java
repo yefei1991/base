@@ -94,17 +94,17 @@ public class NovelService extends AbstractService<Novel> {
   private Spider getSpider() {
     DingDianDownloader dddownloader = new DingDianDownloader();
     HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-    SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80),
-        new Proxy("proxyhk.aac.com", 8011));
+    // new Proxy("proxyhk.aac.com", 8011)
+    SimpleProxyProvider proxyProvider = SimpleProxyProvider.from(new Proxy("proxysz.aac.com", 80));
     httpClientDownloader.setProxyProvider(proxyProvider);
-    Spider spider = Spider.create(dddownloader).thread(32).setDownloader(httpClientDownloader)
+    Spider spider = Spider.create(dddownloader).thread(64).setDownloader(httpClientDownloader)
         .addPipeline(new MysqlPipeline());
     return spider;
   }
 
   public void download() {
     Spider spider = getSpider();
-    for (int i = 1; i <= 1; i++) {
+    for (int i = 1; i <= 10; i++) {
       Request request = new Request(
           "https://www.x23us.com/modules/article/search.php?searchtype=keywords&searchkey=%C8%FD%B9%FA&page="
               + i);
@@ -116,16 +116,19 @@ public class NovelService extends AbstractService<Novel> {
 
   // 部分章节下载失败,重新下载
   public void downFailure() {
-    Condition con = new Condition(Chapter.class);
-    con.and().andIsNull("content");
-    List<Chapter> chapters = chapterService.findByCondition(con);
-    Spider spider = getSpider();
-    for (Chapter c : chapters) {
-      Request request = new Request(c.getUrl());
-      request.putExtra("type", "chapterDetail");
-      spider.addRequest(request);
+    while (true) {
+      Spider spider = getSpider();
+      List<Chapter> chapters = chapterService.findTop5000UnDownloadChapters();
+      if (chapters.size() == 0) {
+        break;
+      }
+      for (Chapter c : chapters) {
+        Request request = new Request(c.getUrl());
+        request.putExtra("type", "chapterDetail");
+        spider.addRequest(request);
+      }
+      spider.run();
     }
-    spider.run();
   }
 
   class MysqlPipeline implements Pipeline {
@@ -148,6 +151,7 @@ public class NovelService extends AbstractService<Novel> {
         con.and().andEqualTo("url", resultItems.getRequest().getUrl());
         Chapter chapter = chapterService.findByCondition(con).get(0);
         chapter.setContent(content);
+        chapter.setDownloaded(true);
         chapterService.update(chapter);
       }
 

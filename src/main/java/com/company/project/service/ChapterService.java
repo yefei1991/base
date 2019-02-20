@@ -33,4 +33,8 @@ public class ChapterService extends AbstractService<Chapter> {
     return chapters.size() == 0 ? null : chapters.get(0);
   }
 
+  public List<Chapter> findTop5000UnDownloadChapters() {
+    return chapterMapper.findTop5000UnDownloadChapters();
+  }
+
 }
