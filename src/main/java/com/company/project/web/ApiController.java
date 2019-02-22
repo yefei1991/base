@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,8 @@ import com.company.project.model.Novel;
 import com.company.project.service.ChapterService;
 import com.company.project.service.NovelService;
 import com.company.project.util.Utils;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 @RestController
 @RequestMapping("/api")
@@ -45,13 +48,25 @@ public class ApiController {
     String novelHexId = new BigInteger(novelId, 10).toString(16);
     Query query = new Query(Criteria.where("id").is(novelHexId));
     Novel novel = mongoTemplate.findOne(query, Novel.class);
-    Query query1 = new Query(Criteria.where("novelid").is(novelId));
-    List<Chapter> chapters = mongoTemplate.find(query1, Chapter.class);
+    // Query query1 = new Query(Criteria.where("novelid").is(novelId));
+    // List<Chapter> chapters = mongoTemplate.find(query1, Chapter.class);
     Map<String, Object> result = new HashMap<>();
     // Novel novel = novelService.findById(novelId);
     // Map<String, Object> result = new HashMap<>();
     // result.put("novel", novel.getName());
     // result.put("chapters", novelService.findChaptersByNovelId(novelId));
+    DBObject dbObject = new BasicDBObject();
+    // dbObject.put("name", "zhangsan"); //查询条件
+    dbObject.put("novelid", novelId);
+
+    BasicDBObject fieldsObject = new BasicDBObject();
+    // 指定返回的字段
+    fieldsObject.put("id", true);
+    fieldsObject.put("title", true);
+
+    Query query1 = new BasicQuery(dbObject, fieldsObject);
+
+    List<Chapter> chapters = mongoTemplate.find(query1, Chapter.class);
     result.put("novel", novel.getName());
     result.put("chapters", Utils.toMap(chapters));
     return JsonResult.success(result);
