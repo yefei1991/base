@@ -41,7 +41,7 @@ public class NovelController {
     @GetMapping("/test")
     public JsonResult test() {
     	Novel novel=new Novel();
-    	novel.setId(1);
+    	//novel.setId(1);
     	return novelService.updateNovelDetail(novel);
     }
 }
